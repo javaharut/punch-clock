@@ -1,0 +1,21 @@
+image: archlinux
+packages:
+    - rustup
+secrets:
+    - 8efb2eb2-2abd-4ce3-8aec-72106cc068cb
+sources:
+    - git@git.sr.ht:~nerosnm/punch
+tasks:
+    - install: |
+        rustup install nightly
+        rustup default nightly
+        rustup component add rustfmt --toolchain nightly
+    - build: |
+        cd punch
+        cargo +nightly build --all
+    - test: |
+        cd punch
+        cargo +nightly test --all
+    - lint: |
+        cd punch
+        cargo +nightly fmt --all -- --check
