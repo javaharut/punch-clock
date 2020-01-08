@@ -12,6 +12,8 @@
 use chrono::{DateTime, Local};
 use structopt::StructOpt;
 
+mod config;
+
 #[derive(Debug, StructOpt)]
 #[structopt(name = "punch", about = "Lightweight time-tracking utility.")]
 enum Opt {
