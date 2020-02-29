@@ -11,24 +11,43 @@
 
 mod opt;
 
-use chrono::Local;
+use chrono::{DateTime, Local, Utc};
+use serde_json::to_string;
 use structopt::StructOpt;
 
 use opt::Opt;
+
+use punch::Event;
 
 fn main() {
     let opt = Opt::from_args();
 
     match opt {
         Opt::In { time: _ } => {
-            let time = Local::now();
+            let time_local = Local::now();
 
-            println!("Punching in at {}.", time.format("%H:%M:%S").to_string());
+            println!(
+                "Punching in at {}.",
+                time_local.format("%H:%M:%S").to_string()
+            );
+
+            let time_utc: DateTime<Utc> = time_local.into();
+            let event = Event::Start(time_utc);
+
+            println!("{}", to_string(&event).unwrap());
         }
         Opt::Out { time: _ } => {
-            let time = Local::now();
+            let time_local = Local::now();
 
-            println!("Punching out at {}.", time.format("%H:%M:%S").to_string());
+            println!(
+                "Punching out at {}.",
+                time_local.format("%H:%M:%S").to_string()
+            );
+
+            let time_utc: DateTime<Utc> = time_local.into();
+            let event = Event::Stop(time_utc);
+
+            println!("{}", to_string(&event).unwrap());
         }
         Opt::Status => {
             println!("Not tracking time.");
