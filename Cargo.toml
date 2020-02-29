@@ -7,4 +7,5 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
+ron = "0.5"
 structopt = "0.3"
