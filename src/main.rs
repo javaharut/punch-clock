@@ -115,7 +115,7 @@ fn main() {
                 println!("Not tracking time.");
             }
             Some(Event::Start(time)) => {
-                println!("Punched in at {}.", time);
+                println!("Punched in at {}.", time.format("%H:%M:%S").to_string());
             }
         },
         Opt::Count { period } => {
