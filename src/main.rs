@@ -131,7 +131,7 @@ fn main() {
         },
         Opt::Status => match sheet.last() {
             Some(Event::Stop(_)) | None => {
-                println!("Not tracking time.");
+                println!("Not punched in.");
             }
             Some(Event::Start(time)) => {
                 println!("Punched in at {}.", time.format("%H:%M:%S").to_string());
