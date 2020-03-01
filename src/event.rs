@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use chrono::{DateTime, Utc};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Event {
     /// The start of a time-tracking period.
     Start(DateTime<Utc>),
