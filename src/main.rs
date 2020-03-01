@@ -84,7 +84,30 @@ fn main() {
             }
         },
         Opt::Count { period } => {
-            println!("Time worked {}: none.", period.to_string().to_lowercase());
+            if sheet.is_empty() {
+                println!("Time worked {}: none.", period.to_string().to_lowercase());
+            } else {
+                let mut total = chrono::Duration::zero();
+                let mut last: Option<Event> = None;
+
+                for (_i, event) in sheet.clone().into_iter().enumerate() {
+                    match (last, event.clone()) {
+                        (Some(Event::Start(start_time)), Event::Stop(stop_time)) => {
+                            let period = stop_time - start_time;
+                            total = total + period;
+                        }
+                        _ => (),
+                    }
+
+                    last = Some(event);
+                }
+
+                println!(
+                    "Time worked all-time: {} hours, {} minutes.",
+                    total.num_hours(),
+                    total.num_minutes()
+                );
+            }
         }
     }
 
