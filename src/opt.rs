@@ -24,7 +24,7 @@ pub enum Opt {
     In {
         /// The time to start the tracking period from (default: now).
         ///
-        /// Currently unimplemented.
+        /// Currently unimplemented; always defaults to now.
         #[structopt(short = "t", long = "time")]
         time: Option<DateTime<Local>>,
     },
@@ -32,13 +32,15 @@ pub enum Opt {
     Out {
         /// The time to end the tracking period at (default: now).
         ///
-        /// Currently unimplemented.
+        /// Currently unimplemented; always defaults to now.
         #[structopt(short = "t", long = "time")]
         time: Option<DateTime<Local>>,
     },
-    /// Check the current status of time-tracking.
+    /// Check whether currently punched in, and if so, since when.
     Status,
     /// Count the amount of time worked over a certain period of time.
+    ///
+    /// Currently unimplemented.
     Count {
         /// Period of time to count from.
         ///
