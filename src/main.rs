@@ -12,26 +12,26 @@
 mod opt;
 
 use chrono::{DateTime, Local, Utc};
+use directories::ProjectDirs;
 use structopt::StructOpt;
 
-use opt::Opt;
+use std::{
+    fs::File,
+    io::{Read, Write},
+};
 
 use punch_clock::{Event, Sheet};
 
-fn main() {
-    use std::{fs::File, io::Read, path::PathBuf};
+use opt::Opt;
 
+fn main() {
     let opt = Opt::from_args();
 
-    let home_dir = env!("HOME");
-    if home_dir.is_empty() {
-        panic!("Value of $HOME environment variable not valid.");
-    }
+    let project_dirs = ProjectDirs::from("dev", "neros", "PunchClock")
+        .expect("Unable to locate project data directory for punch-clock");
+    let data_dir = project_dirs.data_dir().to_owned();
 
-    let mut sheet_dir = PathBuf::from(home_dir);
-    sheet_dir.push(".local/share/punch");
-
-    let mut sheet_path = sheet_dir.clone();
+    let mut sheet_path = data_dir.clone();
     sheet_path.push("sheet.json");
 
     let mut sheet_json = String::new();
@@ -40,7 +40,7 @@ fn main() {
         let mut sheet_file = File::open(&sheet_path)
             .or_else(|_| File::create(&sheet_path).and_then(|_| File::open(&sheet_path)))
             .or_else(|_| {
-                std::fs::create_dir_all(&sheet_dir)
+                std::fs::create_dir_all(&data_dir)
                     .and_then(|_| File::create(&sheet_path))
                     .and_then(|_| File::open(&sheet_path))
             })
@@ -51,7 +51,11 @@ fn main() {
             .expect("Unable to read contents of sheet.json");
     }
 
-    let mut sheet: Sheet = serde_json::from_str(&sheet_json).unwrap_or_default();
+    let mut sheet = if sheet_json.is_empty() {
+        Sheet::default()
+    } else {
+        serde_json::from_str(&sheet_json).expect("Unable to parse contents of sheet.json")
+    };
 
     match opt {
         Opt::In { time: _ } => {
@@ -85,7 +89,7 @@ fn main() {
                 println!("Not tracking time.");
             }
             Some(Event::Start(time)) => {
-                println!("Started tracking time at {}.", time);
+                println!("Punched in at {}.", time);
             }
         },
         Opt::Count { period } => {
@@ -93,12 +97,18 @@ fn main() {
         }
     }
 
-    let mut sheet_file =
-        File::create(&sheet_path).expect("Unable to open sheet.json for overwriting.");
+    {
+        let mut sheet_file =
+            File::create(&sheet_path).expect("Unable to open sheet.json for overwriting.");
 
-    use std::io::Write;
+        let new_sheet_json = serde_json::to_string(&sheet).unwrap();
 
-    let new_sheet_json = serde_json::to_string(&sheet).unwrap();
-
-    write!(&mut sheet_file, "{}", new_sheet_json).expect("Uh oh");
+        write!(&mut sheet_file, "{}", new_sheet_json).unwrap_or_else(|_| {
+            panic!(
+                "Unable to write updated timesheet. Just in case, here's what the contents should \
+                 have been: {}",
+                new_sheet_json
+            )
+        });
+    }
 }
