@@ -1,5 +1,5 @@
 //  sheet.rs
-//  punch
+//  punch-clock
 //
 //  Created by Søren Mortensen <soren@neros.dev> on 2020-03-01.
 //  Copyright (c) 2020 Søren Mortensen.

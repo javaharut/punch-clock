@@ -4,18 +4,18 @@ packages:
 secrets:
     - 8efb2eb2-2abd-4ce3-8aec-72106cc068cb
 sources:
-    - git@git.sr.ht:~nerosnm/punch
+    - git@git.sr.ht:~nerosnm/punch-clock
 tasks:
     - install: |
         rustup install nightly
         rustup default nightly
         rustup component add rustfmt --toolchain nightly
     - build: |
-        cd punch
+        cd punch-clock
         cargo +nightly build --all
     - test: |
-        cd punch
+        cd punch-clock
         cargo +nightly test --all
     - lint: |
-        cd punch
+        cd punch-clock
         cargo +nightly fmt --all -- --check

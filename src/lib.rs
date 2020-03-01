@@ -1,5 +1,5 @@
 //  lib.rs
-//  punch
+//  punch-clock
 //
 //  Created by Søren Mortensen <soren@neros.dev> on 2019-12-26.
 //  Copyright (c) 2019 Søren Mortensen.

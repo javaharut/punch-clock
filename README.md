@@ -1,7 +1,7 @@
-# Punch
+# Punch Clock
 
-[![builds.sr.ht status](https://builds.sr.ht/~nerosnm/punch/.build.yml.svg)]
-(https://builds.sr.ht/~nerosnm/punch/.build.yml?)
+[![builds.sr.ht status](https://builds.sr.ht/~nerosnm/punch-clock/.build.yml.svg)]
+(https://builds.sr.ht/~nerosnm/punch-clock/.build.yml?)
 
-Punch is a lightweight terminal time-tracking utility.
+`punch-clock` is a lightweight terminal time-tracking utility.
 

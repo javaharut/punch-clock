@@ -1,5 +1,5 @@
 //  event.rs
-//  punch
+//  punch-clock
 //
 //  Created by Søren Mortensen <soren@neros.dev> on 2020-02-29.
 //  Copyright (c) 2020 Søren Mortensen.

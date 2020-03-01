@@ -1,9 +1,13 @@
 [package]
-name = "punch"
+name = "punch-clock"
 version = "0.1.0"
 authors = ["Søren Mortensen <soren@neros.dev>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "punch"
+path = "src/main.rs"
 
 [dependencies]
 chrono = { version = "^0.4", features = ["serde"] }

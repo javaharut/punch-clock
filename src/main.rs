@@ -1,5 +1,5 @@
 //  main.rs
-//  punch
+//  punch-clock
 //
 //  Created by Søren Mortensen <soren@neros.dev> on 2019-12-26.
 //  Copyright (c) 2019 Søren Mortensen.
@@ -16,7 +16,7 @@ use structopt::StructOpt;
 
 use opt::Opt;
 
-use punch::{Event, Sheet};
+use punch_clock::{Event, Sheet};
 
 fn main() {
     use std::{fs::File, io::Read, path::PathBuf};
