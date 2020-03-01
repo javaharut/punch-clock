@@ -6,6 +6,7 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 
 description = "Lightweight terminal time-tracking utility."
+homepage = "https://git.sr.ht/~nerosnm/punch-clock"
 repository = "https://git.sr.ht/~nerosnm/punch-clock"
 readme = "README.md"
 keywords = ["time", "tracking", "punch", "clock"]
