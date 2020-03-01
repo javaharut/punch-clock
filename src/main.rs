@@ -84,32 +84,51 @@ fn main() {
     let mut sheet = read_sheet();
 
     match opt {
-        Opt::In { time: _ } => {
-            let time_local = Local::now();
+        Opt::In { time: _ } => match sheet.last() {
+            Some(Event::Stop(_)) | None => {
+                let time_local = Local::now();
 
-            println!(
-                "Punching in at {}.",
-                time_local.format("%H:%M:%S").to_string()
-            );
+                println!(
+                    "Punching in at {}.",
+                    time_local.format("%H:%M:%S").to_string()
+                );
 
-            let time_utc: DateTime<Utc> = time_local.into();
-            let event = Event::Start(time_utc);
+                let time_utc: DateTime<Utc> = time_local.into();
+                let event = Event::Start(time_utc);
 
-            sheet.push(event);
-        }
-        Opt::Out { time: _ } => {
-            let time_local = Local::now();
+                sheet.push(event);
+            }
+            Some(Event::Start(time)) => {
+                println!(
+                    "Can't punch in; already punched in at {}.",
+                    time.format("%H:%M:%S").to_string()
+                );
+            }
+        },
+        Opt::Out { time: _ } => match sheet.last() {
+            Some(Event::Start(_)) => {
+                let time_local = Local::now();
 
-            println!(
-                "Punching out at {}.",
-                time_local.format("%H:%M:%S").to_string()
-            );
+                println!(
+                    "Punching out at {}.",
+                    time_local.format("%H:%M:%S").to_string()
+                );
 
-            let time_utc: DateTime<Utc> = time_local.into();
-            let event = Event::Stop(time_utc);
+                let time_utc: DateTime<Utc> = time_local.into();
+                let event = Event::Stop(time_utc);
 
-            sheet.push(event);
-        }
+                sheet.push(event);
+            }
+            Some(Event::Stop(time)) => {
+                println!(
+                    "Can't punch out; already punched out at {}.",
+                    time.format("%H:%M:%S").to_string()
+                );
+            }
+            None => {
+                println!("Can't punch out; no punch-in recorded.");
+            }
+        },
         Opt::Status => match sheet.last() {
             Some(Event::Stop(_)) | None => {
                 println!("Not tracking time.");
