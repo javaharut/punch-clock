@@ -4,6 +4,14 @@ version = "0.1.0"
 authors = ["Søren Mortensen <soren@neros.dev>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
+description = "Lightweight terminal time-tracking utility."
+repository = "https://git.sr.ht/~nerosnm/punch-clock"
+readme = "README.md"
+keywords = ["time", "tracking", "punch", "clock"]
+categories = ["command-line-utilities"]
+
+[badges]
+maintenance = { status = "actively-developed" }
 
 [[bin]]
 name = "punch"
