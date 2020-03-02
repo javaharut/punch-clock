@@ -22,17 +22,15 @@ use std::{
 pub enum Opt {
     /// Start tracking time.
     In {
-        /// The time to start the tracking period from (default: now).
-        ///
-        /// Currently unimplemented; always defaults to now.
+        /// The time to start the tracking period from (default: now). Currently unimplemented;
+        /// always defaults to now.
         #[structopt(short = "t", long = "time")]
         time: Option<DateTime<Local>>,
     },
     /// Stop tracking time.
     Out {
-        /// The time to end the tracking period at (default: now).
-        ///
-        /// Currently unimplemented; always defaults to now.
+        /// The time to end the tracking period at (default: now). Currently unimplemented; always
+        /// defaults to now.
         #[structopt(short = "t", long = "time")]
         time: Option<DateTime<Local>>,
     },
@@ -40,12 +38,10 @@ pub enum Opt {
     Status,
     /// Count the amount of time worked over a certain period of time.
     Count {
-        /// Period of time to count from.
-        ///
-        /// Values for <period> include: all, today, yesterday, week, month, last week,
-        /// last month. Shortened versions of these values are also available, such as "t" for
-        /// "today". This is currently unimplemented.
-        #[structopt(default_value = "all")]
+        /// Period of time to count from. Values for <period> include: all, today, yesterday, week,
+        /// month, last week, last month. Shortened versions of these values are also available,
+        /// such as "t" for "today".
+        #[structopt(default_value = "today")]
         period: Period,
     },
 }
