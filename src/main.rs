@@ -11,7 +11,7 @@
 
 mod opt;
 
-use chrono::prelude::*;
+use chrono::{prelude::*, Duration};
 use directories::ProjectDirs;
 use structopt::StructOpt;
 
@@ -161,7 +161,35 @@ fn main() {
 
                         (start_utc, end_utc)
                     }
-                    _ => unimplemented!(),
+                    Period::Month => {
+                        let now = Local::now();
+                        let month_first = Local.ymd(now.year(), now.month(), 1);
+
+                        let start_local = month_first.and_hms(0, 0, 0);
+                        let end_local = now;
+                        let end_utc: DateTime<Utc> = end_local.into();
+
+                        let span = end_local - start_local;
+                        let start_utc = end_utc - span;
+
+                        (start_utc, end_utc)
+                    }
+                    Period::LastMonth => {
+                        let today = Local::today();
+                        let month_first = Local.ymd(today.year(), today.month(), 1);
+
+                        let day_before = month_first - Duration::days(1);
+                        let last_month_first = Local.ymd(day_before.year(), day_before.month(), 1);
+
+                        let start_local = last_month_first.and_hms(0, 0, 0);
+                        let end_local = month_first.and_hms(0, 0, 0);
+                        let end_utc: DateTime<Utc> = end_local.into();
+
+                        let span = end_local - start_local;
+                        let start_utc = end_utc - span;
+
+                        (start_utc, end_utc)
+                    }
                 };
 
                 let total = sheet.count_range(start, end);
