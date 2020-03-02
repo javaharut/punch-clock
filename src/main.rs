@@ -11,7 +11,7 @@
 
 mod opt;
 
-use chrono::{DateTime, Local, Utc};
+use chrono::prelude::*;
 use directories::ProjectDirs;
 use structopt::StructOpt;
 
@@ -20,9 +20,12 @@ use std::{
     io::{Read, Write},
 };
 
-use punch_clock::{Event, Sheet};
+use punch_clock::{
+    sheet::{SheetError, SheetStatus},
+    Sheet,
+};
 
-use opt::Opt;
+use opt::{Opt, Period};
 
 fn main() {
     let opt = Opt::from_args();
@@ -30,82 +33,144 @@ fn main() {
     let mut sheet = read_sheet();
 
     match opt {
-        Opt::In { time: _ } => match sheet.last() {
-            Some(Event::Stop(_)) | None => {
-                let time_local = Local::now();
+        Opt::In { .. } => match sheet.punch_in() {
+            Ok(time_utc) => {
+                let time_local: DateTime<Local> = time_utc.into();
 
                 println!(
                     "Punching in at {}.",
                     time_local.format("%H:%M:%S").to_string()
                 );
-
-                let time_utc: DateTime<Utc> = time_local.into();
-                let event = Event::Start(time_utc);
-
-                sheet.push(event);
             }
-            Some(Event::Start(time)) => {
+            Err(SheetError::PunchedIn(start_utc)) => {
+                let start_local: DateTime<Local> = start_utc.into();
+
                 println!(
-                    "Can't punch in; already punched in at {}.",
-                    time.format("%H:%M:%S").to_string()
+                    "Can't punch in: already punched in at {}.",
+                    start_local.format("%H:%M:%S").to_string()
                 );
             }
+            Err(err) => {
+                panic!("Unexpected error while punching in: {}", err);
+            }
         },
-        Opt::Out { time: _ } => match sheet.last() {
-            Some(Event::Start(_)) => {
-                let time_local = Local::now();
+        Opt::Out { .. } => match sheet.punch_out() {
+            Ok(time_utc) => {
+                let time_local: DateTime<Local> = time_utc.into();
 
                 println!(
                     "Punching out at {}.",
                     time_local.format("%H:%M:%S").to_string()
                 );
-
-                let time_utc: DateTime<Utc> = time_local.into();
-                let event = Event::Stop(time_utc);
-
-                sheet.push(event);
             }
-            Some(Event::Stop(time)) => {
+            Err(SheetError::PunchedOut(end_utc)) => {
+                let end_local: DateTime<Local> = end_utc.into();
+
                 println!(
-                    "Can't punch out; already punched out at {}.",
-                    time.format("%H:%M:%S").to_string()
+                    "Can't punch out: already punched out at {}.",
+                    end_local.format("%H:%M:%S").to_string()
                 );
             }
-            None => {
+            Err(SheetError::NoPunches) => {
                 println!("Can't punch out; no punch-in recorded.");
             }
-        },
-        Opt::Status => match sheet.last() {
-            Some(Event::Stop(_)) | None => {
-                println!("Not punched in.");
+            Err(err) => {
+                panic!("Unexpected error while punching out: {}", err);
             }
-            Some(Event::Start(time)) => {
-                println!("Punched in at {}.", time.format("%H:%M:%S").to_string());
+        },
+        Opt::Status => match sheet.status() {
+            SheetStatus::PunchedIn(start_utc) => {
+                let start_local: DateTime<Local> = start_utc.into();
+                println!(
+                    "Punched in since {}.",
+                    start_local.format("%H:%M:%S").to_string()
+                );
+            }
+            SheetStatus::PunchedOut(end_utc) => {
+                let end_local: DateTime<Local> = end_utc.into();
+                println!(
+                    "Not punched in; last punched out at {}.",
+                    end_local.format("%H:%M:%S").to_string()
+                );
+            }
+            SheetStatus::Empty => {
+                println!("Not punched in; no punch-ins recorded.");
             }
         },
         Opt::Count { period } => {
-            if sheet.is_empty() {
-                println!("Time worked {}: none.", period.to_string().to_lowercase());
+            if sheet.status() == SheetStatus::Empty {
+                println!(
+                    "Time worked {}: 0 hours, 0 minutes.",
+                    period.to_string().to_lowercase()
+                );
             } else {
-                let mut total = chrono::Duration::zero();
-                let mut last: Option<Event> = None;
+                let (start, end) = match period {
+                    Period::All => (sheet.events[0].start, Utc::now()),
+                    Period::Today => {
+                        let end_local = Local::now();
+                        let end_utc: DateTime<Utc> = end_local.into();
+                        let start_local = Local::today().and_hms(0, 0, 0);
 
-                for (_i, event) in sheet.clone().into_iter().enumerate() {
-                    match (last, event.clone()) {
-                        (Some(Event::Start(start_time)), Event::Stop(stop_time)) => {
-                            let period = stop_time - start_time;
-                            total = total + period;
-                        }
-                        _ => (),
+                        let span = end_local - start_local;
+                        let start_utc = end_utc - span;
+
+                        (start_utc, end_utc)
                     }
+                    Period::Yesterday => {
+                        let end_local = Local::today().and_hms(0, 0, 0);
+                        let end_utc: DateTime<Utc> = end_local.into();
+                        let start_local = Local::today().pred().and_hms(0, 0, 0);
 
-                    last = Some(event);
-                }
+                        let span = end_local - start_local;
+                        let start_utc = end_utc - span;
+
+                        (start_utc, end_utc)
+                    }
+                    Period::Week => {
+                        let mut last_monday = Local::today();
+                        while last_monday.weekday() != Weekday::Mon {
+                            last_monday = last_monday.pred();
+                        }
+
+                        let start_local = last_monday.and_hms(0, 0, 0);
+                        let end_local = Local::now();
+                        let end_utc: DateTime<Utc> = end_local.into();
+
+                        let span = end_local - start_local;
+                        let start_utc = end_utc - span;
+
+                        (start_utc, end_utc)
+                    }
+                    Period::LastWeek => {
+                        let mut last_monday = Local::today();
+                        while last_monday.weekday() != Weekday::Mon {
+                            last_monday = last_monday.pred();
+                        }
+
+                        let mut monday_before = last_monday.pred();
+                        while monday_before.weekday() != Weekday::Mon {
+                            monday_before = monday_before.pred();
+                        }
+
+                        let start_local = monday_before.and_hms(0, 0, 0);
+                        let end_local = last_monday.and_hms(0, 0, 0);
+                        let end_utc: DateTime<Utc> = end_local.into();
+
+                        let span = end_local - start_local;
+                        let start_utc = end_utc - span;
+
+                        (start_utc, end_utc)
+                    }
+                    _ => unimplemented!(),
+                };
+
+                let total = sheet.count_range(start, end);
 
                 println!(
-                    "Time worked all-time: {} hours, {} minutes.",
+                    "Time worked {}: {} hours, {} minutes.",
+                    period.to_string().to_lowercase(),
                     total.num_hours(),
-                    total.num_minutes()
+                    total.num_minutes() - total.num_hours() * 60,
                 );
             }
         }
@@ -149,9 +214,8 @@ fn read_sheet() -> Sheet {
 fn overwrite_sheet(sheet: &Sheet) {
     let project_dirs = ProjectDirs::from("dev", "neros", "PunchClock")
         .expect("Unable to locate project data directory for punch-clock");
-    let data_dir = project_dirs.data_dir().to_owned();
 
-    let mut sheet_path = data_dir.clone();
+    let mut sheet_path = project_dirs.data_dir().to_owned();
     sheet_path.push("sheet.json");
 
     let mut sheet_file =

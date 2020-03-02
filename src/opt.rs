@@ -39,15 +39,13 @@ pub enum Opt {
     /// Check whether currently punched in, and if so, since when.
     Status,
     /// Count the amount of time worked over a certain period of time.
-    ///
-    /// Currently unimplemented.
     Count {
         /// Period of time to count from.
         ///
         /// Values for <period> include: all, today, yesterday, week, month, last week,
         /// last month. Shortened versions of these values are also available, such as "t" for
-        /// "today".
-        #[structopt(default_value = "today")]
+        /// "today". This is currently unimplemented.
+        #[structopt(default_value = "all")]
         period: Period,
     },
 }

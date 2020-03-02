@@ -14,9 +14,15 @@ use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-pub enum Event {
+pub struct Event {
     /// The start of a time-tracking period.
-    Start(DateTime<Utc>),
+    pub start: DateTime<Utc>,
     /// The end of a time-tracking period.
-    Stop(DateTime<Utc>),
+    pub stop: Option<DateTime<Utc>>,
+}
+
+impl Event {
+    pub fn new(start: DateTime<Utc>) -> Self {
+        Event { start, stop: None }
+    }
 }
