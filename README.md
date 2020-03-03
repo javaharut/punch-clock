@@ -7,7 +7,21 @@
 [Latest Version]: https://img.shields.io/crates/v/punch-clock.svg
 [crates.io]: https://crates.io/crates/punch-clock
 
-`punch-clock` is a lightweight terminal time-tracking utility.
+Punch Clock is a lightweight terminal time-tracking utility.
+
+## Installation
+
+### Cargo Install
+
+If you have the Rust compiler [installed](https://rustup.rs), you can use the `cargo install` 
+command:
+
+```
+cargo install punch-clock
+```
+
+The binary name for Punch Clock is `punch`; Cargo will build the `punch` binary and place it in 
+`$HOME/.cargo`.
 
 ## License
 
