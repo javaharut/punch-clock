@@ -1,0 +1,12 @@
+image: archlinux
+packages:
+    - git
+sources:
+    - git@git.sr.ht:~nerosnm/punch-clock
+secrets:
+    - b73872b8-a19c-444f-a247-951b25964088
+tasks:
+    - mirror: |
+        cd punch-clock
+        git remote add github git@github.com:nerosnm/punch-clock.git
+        git push github --mirror
