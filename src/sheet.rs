@@ -69,8 +69,7 @@ impl Sheet {
     pub fn count_range(&self, begin: DateTime<Utc>, end: DateTime<Utc>) -> Duration {
         self.events
             .iter()
-            .filter(|e| e.stop.is_some())
-            .map(|e| (e.start, e.stop.unwrap()))
+            .map(|e| (e.start, e.stop.unwrap_or(Utc::now())))
             .filter(|(start, stop)| {
                 let entirely_before = start < &begin && stop < &begin;
                 let entirely_after = start > &end && stop > &end;

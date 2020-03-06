@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Include the current, unfinished tracking period when counting the amount of time worked (#3).
+
 ## 0.1.0
 
 Initial development release.
