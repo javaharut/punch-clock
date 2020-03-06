@@ -12,7 +12,7 @@
 [crates.io]: https://crates.io/crates/punch-clock
 [License]: https://img.shields.io/crates/l/punch-clock.svg
 [license-file]: https://git.sr.ht/~nerosnm/punch-clock/tree/master/LICENSE
-[Downloads]: https://img.shields.io/crates/dv/punch-clock.svg
+[Downloads]: https://img.shields.io/crates/d/punch-clock.svg
 [Maintenance]: https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg
 [git.sr.ht]: https://git.sr.ht/~nerosnm/punch-clock
 
