@@ -4,6 +4,7 @@
 [![Latest Version]][crates.io]
 [![License]][license-file]
 [![Downloads]][crates.io]
+[![Maintenance]][git.sr.ht]
 
 [Build Status]: https://builds.sr.ht/~nerosnm/punch-clock/build.yml.svg
 [builds.sr.ht]: https://builds.sr.ht/~nerosnm/punch-clock/build.yml
@@ -12,6 +13,8 @@
 [License]: https://img.shields.io/crates/l/punch-clock.svg
 [license-file]: https://git.sr.ht/~nerosnm/punch-clock/tree/master/LICENSE
 [Downloads]: https://img.shields.io/crates/dv/punch-clock.svg
+[Maintenance]: https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg
+[git.sr.ht]: https://git.sr.ht/~nerosnm/punch-clock
 
 Punch Clock is a lightweight terminal time-tracking utility.
 
