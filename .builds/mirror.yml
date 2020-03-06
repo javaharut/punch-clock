@@ -8,5 +8,6 @@ secrets:
 tasks:
     - mirror: |
         cd punch-clock
+        ssh-keyscan -H github.com >> ~/.ssh/known_hosts
         git remote add github git@github.com:nerosnm/punch-clock.git
         git push github --mirror
