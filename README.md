@@ -2,8 +2,8 @@
 
 [![Build Status]][builds.sr.ht] [![Latest Version]][crates.io]
 
-[Build Status]: https://builds.sr.ht/~nerosnm/punch-clock/.build.yml.svg
-[builds.sr.ht]: https://builds.sr.ht/~nerosnm/punch-clock/.build.yml
+[Build Status]: https://builds.sr.ht/~nerosnm/punch-clock/build.yml.svg
+[builds.sr.ht]: https://builds.sr.ht/~nerosnm/punch-clock/build.yml
 [Latest Version]: https://img.shields.io/crates/v/punch-clock.svg
 [crates.io]: https://crates.io/crates/punch-clock
 
