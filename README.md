@@ -48,3 +48,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any 
 additional terms or conditions.
 
+## Resources
+
+[Send patches](https://git-send-email.io) and questions to
+[~nerosnm/punch-clock@lists.sr.ht](https://lists.sr.ht/~nerosnm/punch-clock).
+
+Bug & issue tracker: [~nerosnm/punch-clock](https://todo.sr.ht/~nerosnm/punch-clock).
+
