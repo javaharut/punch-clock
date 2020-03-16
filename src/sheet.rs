@@ -15,16 +15,20 @@ use thiserror::Error;
 
 use crate::Event;
 
+/// List of events, together comprising a log of work from which totals can be calculated for
+/// various periods of time.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Sheet {
     pub events: Vec<Event>,
 }
 
 impl Sheet {
+    /// Record a punch-in (start of a time-tracking period) at the current time.
     pub fn punch_in(&mut self) -> Result<DateTime<Utc>, SheetError> {
         self.punch_in_at(Utc::now())
     }
 
+    /// Record a punch-in (start of a time-tracking period) at the given time.
     pub fn punch_in_at(&mut self, time: DateTime<Utc>) -> Result<DateTime<Utc>, SheetError> {
         match self.events.last() {
             Some(Event { stop: Some(_), .. }) | None => {
@@ -38,10 +42,12 @@ impl Sheet {
         }
     }
 
+    /// Record a punch-out (end of a time-tracking period) at the current time.
     pub fn punch_out(&mut self) -> Result<DateTime<Utc>, SheetError> {
         self.punch_out_at(Utc::now())
     }
 
+    /// Record a punch-out (end of a time-tracking period) at the given time.
     pub fn punch_out_at(&mut self, time: DateTime<Utc>) -> Result<DateTime<Utc>, SheetError> {
         match self.events.last_mut() {
             Some(ref mut event @ Event { stop: None, .. }) => {
@@ -56,6 +62,8 @@ impl Sheet {
         }
     }
 
+    /// Get the current status of time-tracking, including the time at which the status last
+    /// changed.
     pub fn status(&self) -> SheetStatus {
         match self.events.last() {
             Some(Event {
@@ -66,6 +74,8 @@ impl Sheet {
         }
     }
 
+    /// Count the amount of time for which there was recorded work between the two given instants,
+    /// including an ongoing time-tracking period if there is one.
     pub fn count_range(&self, begin: DateTime<Utc>, end: DateTime<Utc>) -> Duration {
         self.events
             .iter()
@@ -92,13 +102,20 @@ impl Default for Sheet {
     }
 }
 
+/// Whether or not time is currently being tracked.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SheetStatus {
+    /// Time is currently being tracked, and has been since the given instant.
     PunchedIn(DateTime<Utc>),
+    /// Time is not currently being tracked, as of the given instant.
     PunchedOut(DateTime<Utc>),
+    /// No time has ever been tracked.
     Empty,
 }
 
+/// Errors arising through the use of [`Sheet`][sheet].
+///
+/// [sheet]: ./struct.Sheet.html
 #[derive(Error, Debug)]
 pub enum SheetError {
     #[error("already punched in at {0}")]
