@@ -14,14 +14,27 @@ use std::{
     str::FromStr,
 };
 
+/// Represents a period of time relative to now.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Period {
+    /// The period of time that began at the start of the first tracked event.
     All,
+    /// The period of time that began at midnight at the start of the current day.
     Today,
+    /// The period of time 24 hours in length that ended at midnight at the start of the current
+    /// day.
     Yesterday,
+    /// The period of time that began at midnight at the start of the last Monday that occurred
+    /// (including the current day).
     Week,
+    /// The period of time 7 days (168 hours) in length that ended at midnight at the start of the
+    /// last Monday that occurred.
     LastWeek,
+    /// The period of time that began at midnight at the start of the last day that occurred whose
+    /// number was 1 (including the current day).
     Month,
+    /// The period of time between the midnights at the beginning of the last two occurrences of
+    /// days whose numbers were 1 (including the current day).
     LastMonth,
 }
 
