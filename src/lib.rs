@@ -10,7 +10,9 @@
 //  copied, modified, or distributed except according to those terms.
 
 pub mod event;
+pub mod period;
 pub mod sheet;
 
 pub use event::Event;
+pub use period::Period;
 pub use sheet::Sheet;

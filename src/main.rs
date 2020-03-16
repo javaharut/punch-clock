@@ -22,10 +22,10 @@ use std::{
 
 use punch_clock::{
     sheet::{SheetError, SheetStatus},
-    Sheet,
+    Period, Sheet,
 };
 
-use opt::{Opt, Period};
+use opt::Opt;
 
 fn main() {
     let opt = Opt::from_args();
