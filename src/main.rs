@@ -27,6 +27,9 @@ use punch_clock::{
 
 use opt::Opt;
 
+const SAME_DAY_FORMAT: &str = "%H:%M:%S";
+const DIFF_DAY_FORMAT: &str = "%H:%M:%S on %e %b";
+
 fn main() {
     let opt = Opt::from_args();
 
@@ -45,9 +48,15 @@ fn main() {
             Err(SheetError::PunchedIn(start_utc)) => {
                 let start_local: DateTime<Local> = start_utc.into();
 
+                let format = if start_local.date() == Local::today() {
+                    SAME_DAY_FORMAT
+                } else {
+                    DIFF_DAY_FORMAT
+                };
+
                 println!(
                     "Can't punch in: already punched in at {}.",
-                    start_local.format("%H:%M:%S").to_string()
+                    start_local.format(format).to_string()
                 );
             }
             Err(err) => {
@@ -66,9 +75,15 @@ fn main() {
             Err(SheetError::PunchedOut(end_utc)) => {
                 let end_local: DateTime<Local> = end_utc.into();
 
+                let format = if end_local.date() == Local::today() {
+                    SAME_DAY_FORMAT
+                } else {
+                    DIFF_DAY_FORMAT
+                };
+
                 println!(
                     "Can't punch out: already punched out at {}.",
-                    end_local.format("%H:%M:%S").to_string()
+                    end_local.format(format).to_string()
                 );
             }
             Err(SheetError::NoPunches) => {
@@ -81,16 +96,30 @@ fn main() {
         Opt::Status => match sheet.status() {
             SheetStatus::PunchedIn(start_utc) => {
                 let start_local: DateTime<Local> = start_utc.into();
+
+                let format = if start_local.date() == Local::today() {
+                    SAME_DAY_FORMAT
+                } else {
+                    DIFF_DAY_FORMAT
+                };
+
                 println!(
                     "Punched in since {}.",
-                    start_local.format("%H:%M:%S").to_string()
+                    start_local.format(format).to_string()
                 );
             }
             SheetStatus::PunchedOut(end_utc) => {
                 let end_local: DateTime<Local> = end_utc.into();
+
+                let format = if end_local.date() == Local::today() {
+                    SAME_DAY_FORMAT
+                } else {
+                    DIFF_DAY_FORMAT
+                };
+
                 println!(
                     "Not punched in; last punched out at {}.",
-                    end_local.format("%H:%M:%S").to_string()
+                    end_local.format(format).to_string()
                 );
             }
             SheetStatus::Empty => {
