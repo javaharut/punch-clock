@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Include the date when printing times that occurred on a different day (#4).
+
 ## 0.1.1
 
 - Include the current, unfinished tracking period when counting the amount of time worked (#3).
