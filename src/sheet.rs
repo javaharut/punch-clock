@@ -12,8 +12,14 @@
 //! Working with recorded timesheets (lists of events).
 
 use chrono::{DateTime, Duration, Utc};
+use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+
+use std::{
+    fs::File,
+    io::{Read, Write},
+};
 
 use crate::Event;
 
@@ -25,6 +31,68 @@ pub struct Sheet {
 }
 
 impl Sheet {
+    /// Attempt to load a sheet from the file at the default location.
+    ///
+    /// The default location is determined using the [directories][directories] crate by platform
+    /// as follows:
+    ///
+    /// + Linux: `$XDG_CONFIG_HOME/punchclock/sheet.json`
+    /// + macOS: `$HOME/Library/Application Support/dev.neros.PunchClock/sheet.json`
+    /// + Windows: `%APPDATA%\Local\Neros\PunchClock\sheet.json`
+    ///
+    /// [directories]: https://crates.io/crates/directories
+    pub fn load_default() -> Result<Sheet, SheetError> {
+        let project_dirs =
+            ProjectDirs::from("dev", "neros", "PunchClock").ok_or(SheetError::FindSheet)?;
+        let data_dir = project_dirs.data_dir().to_owned();
+
+        let mut sheet_path = data_dir.clone();
+        sheet_path.push("sheet.json");
+
+        let mut sheet_json = String::new();
+
+        {
+            let mut sheet_file = File::open(&sheet_path).map_err(SheetError::OpenSheet)?;
+
+            sheet_file
+                .read_to_string(&mut sheet_json)
+                .map_err(SheetError::ReadSheet)?;
+        }
+
+        if sheet_json.is_empty() {
+            Ok(Sheet::default())
+        } else {
+            serde_json::from_str(&sheet_json).map_err(SheetError::ParseSheet)
+        }
+    }
+
+    /// Attempt to write a sheet to the file at the default location.
+    ///
+    /// The default location is determined using the [directories][directories] crate by platform
+    /// as follows:
+    ///
+    /// + Linux: `$XDG_CONFIG_HOME/punchclock/sheet.json`
+    /// + macOS: `$HOME/Library/Application Support/dev.neros.PunchClock/sheet.json`
+    /// + Windows: `%APPDATA%\Local\Neros\PunchClock\sheet.json`
+    ///
+    /// [directories]: https://crates.io/crates/directories
+    pub fn write_default(&self) -> Result<(), SheetError> {
+        let new_sheet_json = serde_json::to_string(self).unwrap();
+
+        let project_dirs =
+            ProjectDirs::from("dev", "neros", "PunchClock").ok_or(SheetError::FindSheet)?;
+
+        let mut sheet_path = project_dirs.data_dir().to_owned();
+        sheet_path.push("sheet.json");
+
+        match File::create(&sheet_path) {
+            Ok(mut sheet_file) => {
+                write!(&mut sheet_file, "{}", new_sheet_json).map_err(SheetError::WriteSheet)
+            }
+            Err(e) => Err(SheetError::WriteSheet(e)),
+        }
+    }
+
     /// Record a punch-in (start of a time-tracking period) at the current time.
     pub fn punch_in(&mut self) -> Result<DateTime<Utc>, SheetError> {
         self.punch_in_at(Utc::now())
@@ -126,4 +194,14 @@ pub enum SheetError {
     PunchedOut(DateTime<Utc>),
     #[error("not punched in, no punch-ins recorded")]
     NoPunches,
+    #[error("unable to find sheet file")]
+    FindSheet,
+    #[error("unable to open sheet file")]
+    OpenSheet(#[source] std::io::Error),
+    #[error("unable to read sheet file")]
+    ReadSheet(#[source] std::io::Error),
+    #[error("unable to parse sheet")]
+    ParseSheet(#[source] serde_json::Error),
+    #[error("unable to write sheet to file")]
+    WriteSheet(#[source] std::io::Error),
 }

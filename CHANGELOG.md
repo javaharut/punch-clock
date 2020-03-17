@@ -3,6 +3,7 @@
 ## 0.1.2
 
 - Include the date when printing times that occurred on a different day (#4).
+- Provide a safe interface for loading a sheet from a file (#6).
 
 ## 0.1.1
 

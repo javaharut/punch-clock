@@ -12,13 +12,7 @@
 mod opt;
 
 use chrono::{prelude::*, Duration};
-use directories::ProjectDirs;
 use structopt::StructOpt;
-
-use std::{
-    fs::File,
-    io::{Read, Write},
-};
 
 use punch_clock::{
     sheet::{SheetError, SheetStatus},
@@ -33,7 +27,14 @@ const DIFF_DAY_FORMAT: &str = "%H:%M:%S on %e %b";
 fn main() {
     let opt = Opt::from_args();
 
-    let mut sheet = read_sheet();
+    let mut sheet = Sheet::load_default()
+        .or_else(|err| match err {
+            SheetError::OpenSheet(io_err) if io_err.raw_os_error() == Some(2) => {
+                Ok(Sheet::default())
+            }
+            _ => Err(err),
+        })
+        .unwrap();
 
     match opt {
         Opt::In { .. } => match sheet.punch_in() {
@@ -233,58 +234,5 @@ fn main() {
         }
     }
 
-    overwrite_sheet(&sheet);
-}
-
-fn read_sheet() -> Sheet {
-    let project_dirs = ProjectDirs::from("dev", "neros", "PunchClock")
-        .expect("Unable to locate project data directory for punch-clock");
-    let data_dir = project_dirs.data_dir().to_owned();
-
-    let mut sheet_path = data_dir.clone();
-    sheet_path.push("sheet.json");
-
-    let mut sheet_json = String::new();
-
-    {
-        let mut sheet_file = File::open(&sheet_path)
-            .or_else(|_| File::create(&sheet_path).and_then(|_| File::open(&sheet_path)))
-            .or_else(|_| {
-                std::fs::create_dir_all(&data_dir)
-                    .and_then(|_| File::create(&sheet_path))
-                    .and_then(|_| File::open(&sheet_path))
-            })
-            .expect("Unable to find or create sheet.json");
-
-        sheet_file
-            .read_to_string(&mut sheet_json)
-            .expect("Unable to read contents of sheet.json");
-    }
-
-    if sheet_json.is_empty() {
-        Sheet::default()
-    } else {
-        serde_json::from_str(&sheet_json).expect("Unable to parse contents of sheet.json")
-    }
-}
-
-fn overwrite_sheet(sheet: &Sheet) {
-    let project_dirs = ProjectDirs::from("dev", "neros", "PunchClock")
-        .expect("Unable to locate project data directory for punch-clock");
-
-    let mut sheet_path = project_dirs.data_dir().to_owned();
-    sheet_path.push("sheet.json");
-
-    let mut sheet_file =
-        File::create(&sheet_path).expect("Unable to open sheet.json for overwriting.");
-
-    let new_sheet_json = serde_json::to_string(&sheet).unwrap();
-
-    write!(&mut sheet_file, "{}", new_sheet_json).unwrap_or_else(|_| {
-        panic!(
-            "Unable to write updated timesheet. Just in case, here's what the contents should \
-             have been: {}",
-            new_sheet_json
-        )
-    });
+    sheet.write_default().unwrap();
 }
