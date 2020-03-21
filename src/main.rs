@@ -12,6 +12,7 @@
 mod opt;
 
 use chrono::{prelude::*, Duration};
+use directories::ProjectDirs;
 use structopt::StructOpt;
 
 use punch_clock::{
@@ -27,6 +28,8 @@ const DIFF_DAY_FORMAT: &str = "%H:%M:%S on %e %b";
 fn main() {
     let opt = Opt::from_args();
 
+    // Try to load the sheet from the default location. If loading fails due to a missing file,
+    // create a new empty sheet.
     let mut sheet = Sheet::load_default()
         .or_else(|err| match err {
             SheetError::OpenSheet(io_err) if io_err.raw_os_error() == Some(2) => {
@@ -234,5 +237,21 @@ fn main() {
         }
     }
 
-    sheet.write_default().unwrap();
+    // Try to write the sheet to the default location. If loading fails due to a missing directory,
+    // create the directory.
+    sheet
+        .write_default()
+        .or_else(|err| match err {
+            SheetError::WriteSheet(io_err) if io_err.raw_os_error() == Some(2) => {
+                let dd = ProjectDirs::from("dev", "neros", "PunchClock")
+                    .expect("Unable to locate data directory for punch-clock.")
+                    .data_dir()
+                    .to_owned();
+
+                std::fs::create_dir(dd).expect("Unable to create data directory for punch-clock.");
+                sheet.write_default()
+            }
+            _ => Err(err),
+        })
+        .unwrap();
 }

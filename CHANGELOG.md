@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Fix crash when writing sheet if directory is missing (#7).
+
 ## 0.1.2
 
 - Include the date when printing times that occurred on a different day (#4).
