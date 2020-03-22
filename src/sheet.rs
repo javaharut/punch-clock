@@ -226,3 +226,53 @@ pub enum SheetError {
     #[error("unable to write sheet to file")]
     WriteSheet(#[source] std::io::Error),
 }
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        fs::{self, File},
+        io,
+    };
+
+    use tempfile;
+
+    use super::*;
+
+    /// Test that writing a sheet to a file that does not yet exist succeeds.
+    #[test]
+    fn create_file() -> io::Result<()> {
+        let dir = tempfile::tempdir()?;
+
+        let dest = dir.path().join("punch-clock");
+        fs::create_dir(&dest)?;
+
+        let actual = Sheet::default().write(&dest.join("sheet.json"));
+
+        assert!(actual.is_ok());
+
+        dir.close()
+    }
+
+    /// Test that writing a sheet to a file that already exists replaces its contents.
+    #[test]
+    fn overwrite_file() -> io::Result<()> {
+        let dir = tempfile::tempdir()?;
+
+        let dest = dir.path().join("punch-clock");
+        fs::create_dir(&dest)?;
+        File::create(dest.join("sheet.json"))?;
+
+        assert!(Sheet::default().write(&dest.join("sheet.json")).is_ok());
+
+        let mut actual = String::new();
+
+        {
+            let mut file = File::open(&dest.join("sheet.json"))?;
+            file.read_to_string(&mut actual)?;
+        }
+
+        assert_eq!(actual, "{\"events\":[]}");
+
+        dir.close()
+    }
+}
