@@ -19,6 +19,7 @@ use thiserror::Error;
 use std::{
     fs::File,
     io::{Read, Write},
+    path::{Path, PathBuf},
 };
 
 use crate::Event;
@@ -31,28 +32,23 @@ pub struct Sheet {
 }
 
 impl Sheet {
-    /// Attempt to load a sheet from the file at the default location.
+    /// Attempt to load a sheet from the file at the default location, as determined by
+    /// [`default_loc()`][default].
     ///
-    /// The default location is determined using the [directories][directories] crate by platform
-    /// as follows:
-    ///
-    /// + Linux: `$XDG_CONFIG_HOME/punchclock/sheet.json`
-    /// + macOS: `$HOME/Library/Application Support/dev.neros.PunchClock/sheet.json`
-    /// + Windows: `%APPDATA%\Local\Neros\PunchClock\sheet.json`
-    ///
-    /// [directories]: https://crates.io/crates/directories
+    /// [default]: #method.default_loc
     pub fn load_default() -> Result<Sheet, SheetError> {
-        let project_dirs =
-            ProjectDirs::from("dev", "neros", "PunchClock").ok_or(SheetError::FindSheet)?;
-        let data_dir = project_dirs.data_dir().to_owned();
+        Self::load(Self::default_loc()?)
+    }
 
-        let mut sheet_path = data_dir.clone();
-        sheet_path.push("sheet.json");
-
+    /// Attempt to load a sheet from the file at the given path.
+    pub fn load<P>(path: P) -> Result<Sheet, SheetError>
+    where
+        P: AsRef<Path>,
+    {
         let mut sheet_json = String::new();
 
         {
-            let mut sheet_file = File::open(&sheet_path).map_err(SheetError::OpenSheet)?;
+            let mut sheet_file = File::open(&path).map_err(SheetError::OpenSheet)?;
 
             sheet_file
                 .read_to_string(&mut sheet_json)
@@ -66,26 +62,51 @@ impl Sheet {
         }
     }
 
-    /// Attempt to write a sheet to the file at the default location.
+    /// Get the default directory in which sheets are stored.
     ///
-    /// The default location is determined using the [directories][directories] crate by platform
-    /// as follows:
+    /// The directory is determined using the [directories][directories] crate by platform as
+    /// follows:
     ///
     /// + Linux: `$XDG_CONFIG_HOME/punchclock/sheet.json`
     /// + macOS: `$HOME/Library/Application Support/dev.neros.PunchClock/sheet.json`
     /// + Windows: `%APPDATA%\Local\Neros\PunchClock\sheet.json`
     ///
     /// [directories]: https://crates.io/crates/directories
+    pub fn default_dir() -> Result<PathBuf, SheetError> {
+        ProjectDirs::from("dev", "neros", "PunchClock")
+            .ok_or(SheetError::FindSheet)
+            .map(|dirs| dirs.data_dir().to_owned())
+    }
+
+    /// Get the path to the file the default sheet is stored in.
+    ///
+    /// This is the file `sheet.json` inside the directory returned from
+    /// [`default_dir()`][default].
+    ///
+    /// [default]: #method.default_dir
+    pub fn default_loc() -> Result<PathBuf, SheetError> {
+        Self::default_dir().map(|mut dir| {
+            dir.push("sheet.json");
+            dir
+        })
+    }
+
+    /// Attempt to write a sheet to the file at the default location, as determined by
+    /// [`default_loc()`][default].
+    ///
+    /// [default]: #method.default_loc
     pub fn write_default(&self) -> Result<(), SheetError> {
+        self.write(Self::default_loc()?)
+    }
+
+    /// Attempt to write a sheet to the file at the given path.
+    pub fn write<P>(&self, path: P) -> Result<(), SheetError>
+    where
+        P: AsRef<Path>,
+    {
         let new_sheet_json = serde_json::to_string(self).unwrap();
 
-        let project_dirs =
-            ProjectDirs::from("dev", "neros", "PunchClock").ok_or(SheetError::FindSheet)?;
-
-        let mut sheet_path = project_dirs.data_dir().to_owned();
-        sheet_path.push("sheet.json");
-
-        match File::create(&sheet_path) {
+        match File::create(&path) {
             Ok(mut sheet_file) => {
                 write!(&mut sheet_file, "{}", new_sheet_json).map_err(SheetError::WriteSheet)
             }
