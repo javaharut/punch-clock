@@ -1,26 +1,13 @@
-//  main.rs
-//  punch-clock
-//
-//  Created by Søren Mortensen <soren@neros.dev> on 2019-12-26.
-//  Copyright (c) 2019 Søren Mortensen.
-//
-//  Licensed under the Apache License, Version 2.0, <LICENSE-APACHE or
-//  http://apache.org/licenses/LICENSE-2.0> or the MIT license <LICENSE-MIT or
-//  http://opensource.org/licenses/MIT>, at your option. This file may not be
-//  copied, modified, or distributed except according to those terms.
-
 mod opt;
 
 use chrono::{prelude::*, Duration};
 use directories::ProjectDirs;
-use structopt::StructOpt;
-
+use opt::Opt;
 use punch_clock::{
     sheet::{SheetError, SheetStatus},
     Period, Sheet,
 };
-
-use opt::Opt;
+use structopt::StructOpt;
 
 const SAME_DAY_FORMAT: &str = "%H:%M:%S";
 const DIFF_DAY_FORMAT: &str = "%H:%M:%S on %e %b";

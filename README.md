@@ -1,20 +1,17 @@
 # Punch Clock
 
-[![Build Status]][builds.sr.ht]
+[![CI]][workflow]
 [![Latest Version]][crates.io]
-[![License]][license-file]
+[![License]][readme]
 [![Downloads]][crates.io]
-[![Maintenance]][git.sr.ht]
 
-[Build Status]: https://builds.sr.ht/~nerosnm/punch-clock/build.yml.svg
-[builds.sr.ht]: https://builds.sr.ht/~nerosnm/punch-clock/build.yml
+[CI]: https://github.com/nerosnm/punch-clock/actions/workflows/ci.yml/badge.svg?branch=main
+[workflow]: https://github.com/nerosnm/punch-clock/actions/workflows/ci.yml
 [Latest Version]: https://img.shields.io/crates/v/punch-clock.svg
 [crates.io]: https://crates.io/crates/punch-clock
 [License]: https://img.shields.io/crates/l/punch-clock.svg
-[license-file]: https://git.sr.ht/~nerosnm/punch-clock/tree/master/LICENSE
+[readme]: https://github.com/nerosnm/punch-clock/tree/main/README.md
 [Downloads]: https://img.shields.io/crates/d/punch-clock.svg
-[Maintenance]: https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg
-[git.sr.ht]: https://git.sr.ht/~nerosnm/punch-clock
 
 Punch Clock is a lightweight terminal time-tracking utility.
 
@@ -47,11 +44,3 @@ at your option.
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the 
 work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any 
 additional terms or conditions.
-
-## Resources
-
-[Send patches](https://git-send-email.io) and questions to
-[~nerosnm/punch-clock@lists.sr.ht](https://lists.sr.ht/~nerosnm/punch-clock).
-
-Bug & issue tracker: [~nerosnm/punch-clock](https://todo.sr.ht/~nerosnm/punch-clock).
-

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- Generalise the way sheets are read and written.
+
 ## 0.1.3
 
 - Fix crash when writing sheet if directory is missing (#7).
