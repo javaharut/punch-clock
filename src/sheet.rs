@@ -15,7 +15,7 @@ use crate::Event;
 
 /// List of events, together comprising a log of work from which totals can be calculated for
 /// various periods of time.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Sheet {
     pub events: Vec<Event>,
 }
@@ -159,7 +159,7 @@ impl Sheet {
     pub fn count_range(&self, begin: DateTime<Utc>, end: DateTime<Utc>) -> Duration {
         self.events
             .iter()
-            .map(|e| (e.start, e.stop.unwrap_or(Utc::now())))
+            .map(|e| (e.start, e.stop.unwrap_or_else(Utc::now)))
             .filter(|(start, stop)| {
                 let entirely_before = start < &begin && stop < &begin;
                 let entirely_after = start > &end && stop > &end;
@@ -173,12 +173,6 @@ impl Sheet {
                 real_end - real_begin
             })
             .fold(Duration::zero(), |acc, next| acc + next)
-    }
-}
-
-impl Default for Sheet {
-    fn default() -> Self {
-        Sheet { events: vec![] }
     }
 }
 

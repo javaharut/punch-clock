@@ -31,10 +31,7 @@ fn main() {
             Ok(time_utc) => {
                 let time_local: DateTime<Local> = time_utc.into();
 
-                println!(
-                    "Punching in at {}.",
-                    time_local.format("%H:%M:%S").to_string()
-                );
+                println!("Punching in at {}.", time_local.format("%H:%M:%S"));
             }
             Err(SheetError::PunchedIn(start_utc)) => {
                 let start_local: DateTime<Local> = start_utc.into();
@@ -47,7 +44,7 @@ fn main() {
 
                 println!(
                     "Can't punch in: already punched in at {}.",
-                    start_local.format(format).to_string()
+                    start_local.format(format)
                 );
             }
             Err(err) => {
@@ -58,10 +55,7 @@ fn main() {
             Ok(time_utc) => {
                 let time_local: DateTime<Local> = time_utc.into();
 
-                println!(
-                    "Punching out at {}.",
-                    time_local.format("%H:%M:%S").to_string()
-                );
+                println!("Punching out at {}.", time_local.format("%H:%M:%S"));
             }
             Err(SheetError::PunchedOut(end_utc)) => {
                 let end_local: DateTime<Local> = end_utc.into();
@@ -74,7 +68,7 @@ fn main() {
 
                 println!(
                     "Can't punch out: already punched out at {}.",
-                    end_local.format(format).to_string()
+                    end_local.format(format)
                 );
             }
             Err(SheetError::NoPunches) => {
@@ -94,10 +88,7 @@ fn main() {
                     DIFF_DAY_FORMAT
                 };
 
-                println!(
-                    "Punched in since {}.",
-                    start_local.format(format).to_string()
-                );
+                println!("Punched in since {}.", start_local.format(format));
             }
             SheetStatus::PunchedOut(end_utc) => {
                 let end_local: DateTime<Local> = end_utc.into();
@@ -110,7 +101,7 @@ fn main() {
 
                 println!(
                     "Not punched in; last punched out at {}.",
-                    end_local.format(format).to_string()
+                    end_local.format(format)
                 );
             }
             SheetStatus::Empty => {
