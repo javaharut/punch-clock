@@ -31,12 +31,12 @@ fn main() {
             Ok(time_utc) => {
                 let time_local: DateTime<Local> = time_utc.into();
 
-                println!("Punching in at {}.", time_local.format("%H:%M:%S"));
+                println!("Punching in at {}.", time_local.format(SAME_DAY_FORMAT));
             }
             Err(SheetError::PunchedIn(start_utc)) => {
                 let start_local: DateTime<Local> = start_utc.into();
 
-                let format = if start_local.date() == Local::today() {
+                let format = if start_local.date_naive() == Local::now().date_naive() {
                     SAME_DAY_FORMAT
                 } else {
                     DIFF_DAY_FORMAT
@@ -60,7 +60,7 @@ fn main() {
             Err(SheetError::PunchedOut(end_utc)) => {
                 let end_local: DateTime<Local> = end_utc.into();
 
-                let format = if end_local.date() == Local::today() {
+                let format = if end_local.date_naive() == Local::now().date_naive() {
                     SAME_DAY_FORMAT
                 } else {
                     DIFF_DAY_FORMAT
@@ -82,7 +82,7 @@ fn main() {
             SheetStatus::PunchedIn(start_utc) => {
                 let start_local: DateTime<Local> = start_utc.into();
 
-                let format = if start_local.date() == Local::today() {
+                let format = if start_local.date_naive() == Local::now().date_naive() {
                     SAME_DAY_FORMAT
                 } else {
                     DIFF_DAY_FORMAT
@@ -93,7 +93,7 @@ fn main() {
             SheetStatus::PunchedOut(end_utc) => {
                 let end_local: DateTime<Local> = end_utc.into();
 
-                let format = if end_local.date() == Local::today() {
+                let format = if end_local.date_naive() == Local::now().date_naive() {
                     SAME_DAY_FORMAT
                 } else {
                     DIFF_DAY_FORMAT
@@ -120,7 +120,7 @@ fn main() {
                     Period::Today => {
                         let end_local = Local::now();
                         let end_utc: DateTime<Utc> = end_local.into();
-                        let start_local = Local::today().and_hms(0, 0, 0);
+                        let start_local = get_local_time(&Local::now(), 0, 0, 0);
 
                         let span = end_local - start_local;
                         let start_utc = end_utc - span;
@@ -128,9 +128,10 @@ fn main() {
                         (start_utc, end_utc)
                     }
                     Period::Yesterday => {
-                        let end_local = Local::today().and_hms(0, 0, 0);
+                        let end_local = get_local_time(&Local::now(), 0, 0, 0);
                         let end_utc: DateTime<Utc> = end_local.into();
-                        let start_local = Local::today().pred().and_hms(0, 0, 0);
+                        let start_local =
+                            get_local_time(&(Local::now() - Duration::days(1)), 0, 0, 0);
 
                         let span = end_local - start_local;
                         let start_utc = end_utc - span;
@@ -138,12 +139,12 @@ fn main() {
                         (start_utc, end_utc)
                     }
                     Period::Week => {
-                        let mut last_monday = Local::today();
+                        let mut last_monday = Local::now();
                         while last_monday.weekday() != Weekday::Mon {
-                            last_monday = last_monday.pred();
+                            last_monday = last_monday - Duration::days(1);
                         }
 
-                        let start_local = last_monday.and_hms(0, 0, 0);
+                        let start_local = get_local_time(&last_monday, 0, 0, 0);
                         let end_local = Local::now();
                         let end_utc: DateTime<Utc> = end_local.into();
 
@@ -153,18 +154,18 @@ fn main() {
                         (start_utc, end_utc)
                     }
                     Period::LastWeek => {
-                        let mut last_monday = Local::today();
+                        let mut last_monday = Local::now();
                         while last_monday.weekday() != Weekday::Mon {
-                            last_monday = last_monday.pred();
+                            last_monday = last_monday - Duration::days(1);
                         }
 
-                        let mut monday_before = last_monday.pred();
+                        let mut monday_before = get_local_time(&last_monday, 0, 0, 0);
                         while monday_before.weekday() != Weekday::Mon {
-                            monday_before = monday_before.pred();
+                            monday_before = monday_before - Duration::days(1);
                         }
 
-                        let start_local = monday_before.and_hms(0, 0, 0);
-                        let end_local = last_monday.and_hms(0, 0, 0);
+                        let start_local = get_local_time(&monday_before, 0, 0, 0);
+                        let end_local = get_local_time(&last_monday, 0, 0, 0);
                         let end_utc: DateTime<Utc> = end_local.into();
 
                         let span = end_local - start_local;
@@ -174,26 +175,31 @@ fn main() {
                     }
                     Period::Month => {
                         let now = Local::now();
-                        let month_first = Local.ymd(now.year(), now.month(), 1);
+                        let month_first =
+                            Local.with_ymd_and_hms(now.year(), now.month(), 1, 0, 0, 0);
 
-                        let start_local = month_first.and_hms(0, 0, 0);
+                        let start_local = month_first.unwrap();
                         let end_local = now;
                         let end_utc: DateTime<Utc> = end_local.into();
 
-                        let span = end_local - start_local;
+                        let span = end_local.naive_local() - start_local.naive_local();
                         let start_utc = end_utc - span;
 
                         (start_utc, end_utc)
                     }
                     Period::LastMonth => {
-                        let today = Local::today();
-                        let month_first = Local.ymd(today.year(), today.month(), 1);
+                        let today = Local::now();
+                        let month_first = Local
+                            .with_ymd_and_hms(today.year(), today.month(), 1, 0, 0, 0)
+                            .unwrap();
 
                         let day_before = month_first - Duration::days(1);
-                        let last_month_first = Local.ymd(day_before.year(), day_before.month(), 1);
+                        let last_month_first = Local
+                            .with_ymd_and_hms(day_before.year(), day_before.month(), 1, 0, 0, 0)
+                            .unwrap();
 
-                        let start_local = last_month_first.and_hms(0, 0, 0);
-                        let end_local = month_first.and_hms(0, 0, 0);
+                        let start_local = last_month_first;
+                        let end_local = month_first;
                         let end_utc: DateTime<Utc> = end_local.into();
 
                         let span = end_local - start_local;
@@ -232,4 +238,15 @@ fn main() {
             _ => Err(err),
         })
         .unwrap();
+}
+
+fn get_local_time(date: &DateTime<Local>, hour: u32, min: u32, sec: u32) -> DateTime<Local> {
+    date.with_hour(hour)
+        .unwrap()
+        .with_minute(min)
+        .unwrap()
+        .with_second(sec)
+        .unwrap()
+        .with_nanosecond(0)
+        .unwrap()
 }
